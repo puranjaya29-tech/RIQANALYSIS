@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>RestaurantIQ - Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-cream: #f5f0e8; 
+            --ink-dark: #0f0e0c; 
+            --gold-accent: #c8a96e; 
+            --gold-dark: #a07840;
+            --muted: #7a7468;
+            --border: rgba(15, 14, 12, 0.1);
+        }
+
+        body { 
+            background: var(--bg-cream); 
+            color: var(--ink-dark); 
+            font-family: 'DM Sans', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+        }
+
+        /* Logout Button - Minimalist */
+        .logout-btn { 
+            position: absolute; 
+            top: 40px; 
+            right: 40px; 
+            border: 1px solid var(--border); 
+            color: var(--ink-dark); 
+            background: white; 
+            padding: 10px 25px; 
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer; 
+            transition: 0.3s;
+            border-radius: 4px;
+        }
+        .logout-btn:hover {
+            background: var(--ink-dark);
+            color: var(--bg-cream);
+        }
+
+        .header { text-align: center; margin-bottom: 50px; }
+        
+        /* Serif Heading based on reference image */
+        .header h1 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 3.8rem; 
+            font-weight: 400;
+            margin: 0; 
+            letter-spacing: -1px;
+        }
+        .header h1 span { color: var(--gold-dark); font-style: italic; }
+        .header p { 
+            font-size: 0.85rem; 
+            color: var(--muted); 
+            text-transform: uppercase; 
+            letter-spacing: 4px;
+            margin-top: 15px;
+        }
+
+        /* Clean 2x2 Grid */
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 350px); 
+            gap: 20px; 
+        }
+        
+        .menu-card {
+            background: white; 
+            border: 1px solid var(--border);
+            padding: 50px 40px;
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+            border-radius: 2px;
+        }
+
+        .menu-card:hover { 
+            background: var(--ink-dark);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(15, 14, 12, 0.1);
+        }
+
+        .menu-card:hover h3, .menu-card:hover p {
+            color: var(--bg-cream);
+        }
+        
+        .menu-card:hover .icon {
+            color: var(--gold-accent);
+            transform: scale(1.1);
+        }
+
+        .icon { 
+            font-size: 1.8rem; 
+            margin-bottom: 25px; 
+            transition: 0.4s;
+            color: var(--gold-dark);
+        }
+
+        .menu-card h3 { 
+            font-family: 'Playfair Display', serif;
+            margin: 0; 
+            font-size: 1.6rem; 
+            font-weight: 400;
+            color: var(--ink-dark);
+        }
+
+        .menu-card p { 
+            font-size: 0.95rem; 
+            color: var(--muted); 
+            margin-top: 12px;
+            line-height: 1.5;
+        }
+
+        /* Decorative Gold Dot like the logo */
+        .dot {
+            color: var(--gold-accent);
+            font-size: 1.2rem;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        /* Responsive for Mobile */
+        @media (max-width: 768px) {
+            .menu-grid { grid-template-columns: 1fr; width: 90%; }
+            .header h1 { font-size: 2.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="logout-btn" onclick="location.href='index.html'">Sign Out</button>
+
+    <div class="header">
+        <p>Analytics Suite</p>
+        <h1><span class="dot">•</span>Restaurant<span>IQ</span></h1>
+    </div>
+
+    <div class="menu-grid">
+        <div class="menu-card" onclick="location.href='dashboard.html'">
+            <div class="icon">📊</div>
+            <div>
+                <h3>Deep Dashboard</h3>
+                <p>Full restaurant insights, real-time data, and performance charts.</p>
+            </div>
+        </div>
+
+        <div class="menu-card" onclick="location.href='compare.html'">
+            <div class="icon">⚔️</div>
+            <div>
+                <h3>Brand Battle</h3>
+                <p>Competitive analysis and benchmarking between two brands.</p>
+            </div>
+        </div>
+
+        <div class="menu-card" onclick="location.href='Leaderboard.html'">
+            <div class="icon">🏆</div>
+            <div>
+                <h3>Market Leaders</h3>
+                <p>Discover top-performing dining spots across 28 global cities.</p>
+            </div>
+        </div>
+
+        <div class="menu-card" onclick="location.href='reprt.html'">
+            <div class="icon">📄</div>
+            <div>
+                <h3>Report Gen</h3>
+                <p>Generate and download professional PDF analytics reports.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

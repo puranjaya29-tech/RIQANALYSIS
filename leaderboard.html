@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>RestaurantIQ - Market Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #f5f0e8; --ink: #0f0e0c; --gold: #c8a96e; --border: rgba(15, 14, 12, 0.1); --white: #ffffff;
+            --rank1: #c8a96e; --rank2: #7a7468; --rank3: #a07840;
+        }
+
+        body { 
+            background-color: var(--bg); color: var(--ink); 
+            font-family: 'Space Grotesk', sans-serif; margin: 0; padding-bottom: 50px; 
+            overflow-x: hidden;
+        }
+
+        /* --- ADVANCED NAVIGATION --- */
+        .nav-bar { 
+            padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; 
+            background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2000;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); text-decoration: none; z-index: 2002; }
+        .logo span { color: var(--gold); font-style: italic; }
+
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { 
+            text-decoration: none; color: var(--ink); font-size: 0.7rem; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 500; opacity: 0.6; transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { opacity: 1; color: var(--gold); }
+
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 2002; }
+        .hamburger span { width: 25px; height: 2px; background: var(--ink); transition: 0.4s; }
+
+        @media (max-width: 850px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%; width: 100%; height: 100vh;
+                background: var(--white); flex-direction: column; justify-content: center;
+                transition: 0.5s cubic-bezier(0.77,0.2,0.05,1.0); z-index: 2001;
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { font-size: 1.5rem; }
+            .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .hamburger.open span:nth-child(2) { opacity: 0; }
+            .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        }
+
+        /* --- HEADER SECTION --- */
+        .header { text-align: center; padding: 80px 20px 40px; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 8vw, 4rem); margin: 0; font-weight: 400; }
+        .header span { color: var(--gold); font-style: italic; }
+        .header p { color: var(--rank2); text-transform: uppercase; letter-spacing: 4px; font-size: 0.7rem; margin-top: 15px; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        /* --- TOP 3 PODIUM CARDS --- */
+        .podium { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; align-items: flex-end;
+        }
+        .podium-card { 
+            background: var(--white); border: 1px solid var(--border); padding: 30px; 
+            text-align: center; transition: 0.4s; position: relative;
+        }
+        .podium-card.rank-1 { border-top: 4px solid var(--rank1); padding: 50px 30px; transform: scale(1.05); z-index: 2; }
+        .podium-card.rank-2 { border-top: 4px solid var(--rank2); }
+        .podium-card.rank-3 { border-top: 4px solid var(--rank3); }
+
+        .podium-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .podium-rank { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--gold); margin-bottom: 10px; }
+
+        /* --- LEADERBOARD LIST --- */
+        .leaderboard-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .rank-row { 
+            background: var(--white); border: 1px solid var(--border); padding: 20px 40px; 
+            display: grid; grid-template-columns: 80px 1fr 150px 150px; align-items: center;
+            transition: 0.3s;
+        }
+        .rank-row:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+        .rank-num { font-family: 'Playfair Display', serif; font-size: 1.2rem; opacity: 0.5; }
+        .res-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin: 0; }
+        .res-cat { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--rank2); margin-top: 4px; }
+        
+        .stat-box { text-align: right; }
+        .stat-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
+        .stat-val { font-weight: 700; font-size: 1.1rem; }
+
+        .loader { text-align: center; padding: 100px; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-style: italic; }
+
+        @media (max-width: 768px) {
+            .podium { grid-template-columns: 1fr; }
+            .rank-row { grid-template-columns: 50px 1fr 100px; padding: 15px; }
+            .stat-box:nth-child(4) { display: none; } /* Hide votes on mobile for space */
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <a href="index.html" class="logo">Restaurant<span>IQ</span></a>
+    
+    <div class="hamburger" id="hamToggle">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="nav-links" id="menuItems">
+        <a href="dashboard.html">Engine</a>
+        <a href="compare.html">Comparison</a>
+        <a href="Leaderboard.html" class="active">Leaderboard</a>
+        <a href="reprt.html">Reports</a>
+    </div>
+</nav>
+
+<div class="header">
+    <p>Market Performance Index</p>
+    <h1>Global <span>Leaderboard</span></h1>
+</div>
+
+<div class="container">
+    <div id="loader" class="loader">Synchronizing Market Data...</div>
+    
+    <div id="podium" class="podium"></div>
+
+    <div id="leaderboard" class="leaderboard-list"></div>
+</div>
+
+<script>
+    // Hamburger Logic
+    const ham = document.getElementById('hamToggle');
+    const menu = document.getElementById('menuItems');
+    ham.onclick = () => {
+        ham.classList.toggle('open');
+        menu.classList.toggle('active');
+    }
+
+    async function loadLeaderboard() {
+        try {
+            const res = await fetch('data.json');
+            const data = await res.json();
+            
+            // 1. Advanced Sorting Logic
+            const sortedData = data.sort((a, b) => {
+                const scoreA = parseFloat(a.score || a.Rating || 0);
+                const scoreB = parseFloat(b.score || b.Rating || 0);
+                if (scoreB !== scoreA) return scoreB - scoreA;
+                return parseInt(b.ratings || b.Votes || 0) - parseInt(a.ratings || a.Votes || 0);
+            });
+
+            const top20 = sortedData.slice(0, 20);
+            document.getElementById('loader').style.display = 'none';
+
+            const podiumDiv = document.getElementById('podium');
+            const listDiv = document.getElementById('leaderboard');
+
+            // 2. Render Podium (Rank 2, 1, 3 for visual balance)
+            const top3 = [top20[1], top20[0], top20[2]]; // Order: 2nd, 1st, 3rd
+            const order = [2, 1, 3];
+
+            top3.forEach((item, index) => {
+                if(!item) return;
+                podiumDiv.innerHTML += `
+                    <div class="podium-card rank-${order[index]}">
+                        <div class="podium-rank">#${order[index]}</div>
+                        <h3 class="res-name">${item.name || item.Name}</h3>
+                        <p class="res-cat">${item.category || 'Fine Dining'}</p>
+                        <div style="margin-top:20px;">
+                            <div class="stat-val" style="color:var(--gold); font-size:1.8rem;">${parseFloat(item.score || item.Rating).toFixed(1)} ★</div>
+                            <div class="stat-label">Market Score</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 3. Render the remaining list (4 to 20)
+            top20.slice(3).forEach((item, index) => {
+                const rank = index + 4;
+                listDiv.innerHTML += `
+                    <div class="rank-row">
+                        <div class="rank-num">0${rank}</div>
+                        <div>
+                            <h3 class="res-name">${item.name || item.Name}</h3>
+                            <p class="res-cat">${item.category || 'Standard'}</p>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Rating</div>
+                            <div class="stat-val">${parseFloat(item.score || item.Rating).toFixed(1)} ★</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Volume</div>
+                            <div class="stat-val">${parseInt(item.ratings || item.Votes).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+        } catch (e) {
+            document.getElementById('loader').innerText = "System Error: Data Source Not Found.";
+        }
+    }
+
+    loadLeaderboard();
+</script>
+
+</body>
+</html>

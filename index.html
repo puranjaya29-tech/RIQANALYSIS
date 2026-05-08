@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="logo.png">
+  <title>RestaurantIQ — Smart Restaurant Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --cream2: #ede6d6;
+      --ink: #0f0e0c;
+      --ink2: #1e1c18;
+      --ink3: #2e2b24;
+      --warm: #c8a96e;
+      --warm2: #a07840;
+      --warm3: #7a5a2a;
+      --red: #c0392b;
+      --muted: #7a7468;
+      --muted2: #b0a898;
+      --border: rgba(200, 169, 110, 0.25);
+      --border2: rgba(200, 169, 110, 0.12);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed; width: 12px; height: 12px;
+      background: var(--ink); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, background 0.2s, width 0.2s, height 0.2s;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      position: fixed; width: 36px; height: 36px;
+      border: 1.5px solid var(--ink); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.18s ease;
+      mix-blend-mode: multiply;
+    }
+    body:has(a:hover) .cursor, body:has(button:hover) .cursor { width: 20px; height: 20px; }
+    body:has(a:hover) .cursor-ring, body:has(button:hover) .cursor-ring { opacity: 0; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 1000;
+      padding: 22px 6%;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(245, 240, 232, 0.85);
+      backdrop-filter: blur(20px) saturate(1.5);
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 600;
+      text-decoration: none; color: var(--ink);
+      letter-spacing: 0.02em;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .logo-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--warm);
+      display: inline-block;
+      margin-bottom: 1px;
+    }
+
+    .nav-links { display: flex; gap: 12px; align-items: center; }
+
+    .btn-ghost {
+      background: transparent; color: var(--muted); border: none;
+      font-family: 'Syne', sans-serif;
+      font-weight: 500; font-size: 0.8rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: none; transition: color 0.2s; padding: 8px 16px;
+    }
+    .btn-ghost:hover { color: var(--ink); }
+
+    .btn-primary {
+      padding: 11px 26px; border-radius: 2px;
+      background: var(--ink); border: none;
+      color: var(--cream); 
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: none; transition: all 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--warm);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .btn-primary:hover::after { transform: translateY(0); }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 0;
+      position: relative;
+    }
+
+    .hero-left {
+      padding: 160px 6% 80px;
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--warm2); font-weight: 600;
+      margin-bottom: 32px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      display: inline-block; width: 28px; height: 1px;
+      background: var(--warm2);
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 5.5vw, 5.5rem);
+      font-weight: 300; line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 30px;
+      color: var(--ink);
+    }
+
+    .hero h1 em {
+      font-style: italic; color: var(--warm2);
+    }
+
+    .hero-desc {
+      font-size: 0.95rem; color: var(--muted);
+      line-height: 1.7; margin-bottom: 48px;
+      max-width: 400px;
+      font-weight: 400;
+    }
+
+    .hero-ctas {
+      display: flex; gap: 16px; align-items: center;
+    }
+
+    .btn-large {
+      padding: 15px 36px; border-radius: 2px;
+      background: var(--ink); border: none;
+      color: var(--cream);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.78rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: none; transition: all 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .btn-large::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--warm);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .btn-large:hover::after { transform: translateY(0); }
+    .btn-large span { position: relative; z-index: 1; }
+
+    .btn-outline {
+      padding: 15px 32px; border-radius: 2px;
+      background: transparent;
+      border: 1px solid rgba(15,14,12,0.25);
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.78rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: none; transition: all 0.25s;
+    }
+    .btn-outline:hover {
+      border-color: var(--ink); color: var(--ink);
+      background: rgba(15,14,12,0.04);
+    }
+
+    /* HERO RIGHT — visual panel */
+    .hero-right {
+      background: var(--ink2);
+      position: relative; overflow: hidden;
+      display: flex; align-items: flex-end; justify-content: flex-end;
+    }
+
+    .hero-right::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 20%, rgba(200,169,110,0.15) 0%, transparent 60%);
+    }
+
+    .hero-visual {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Decorative grid lines */
+    .grid-lines {
+      position: absolute; inset: 0; opacity: 0.06;
+      background-image:
+        linear-gradient(var(--cream) 1px, transparent 1px),
+        linear-gradient(90deg, var(--cream) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Floating cards */
+    .float-card {
+      position: absolute;
+      background: rgba(245, 240, 232, 0.06);
+      border: 1px solid rgba(245, 240, 232, 0.1);
+      border-radius: 4px;
+      backdrop-filter: blur(10px);
+      animation: floatY 6s ease-in-out infinite;
+    }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .card-main {
+      width: 280px; padding: 24px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: 0s;
+    }
+
+    .card-main .rest-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem; font-weight: 400; color: var(--cream);
+      margin-bottom: 6px;
+    }
+
+    .card-main .rest-meta {
+      font-size: 0.7rem; color: var(--muted2);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .rating-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+
+    .stars {
+      display: flex; gap: 2px;
+    }
+
+    .star {
+      width: 12px; height: 12px;
+      background: var(--warm);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    .star.half { opacity: 0.4; }
+
+    .rating-num {
+      font-size: 1.2rem; font-weight: 700; color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .rating-count { font-size: 0.7rem; color: var(--muted2); }
+
+    .metrics-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric-pill {
+      background: rgba(245,240,232,0.07);
+      border-radius: 2px; padding: 10px;
+    }
+
+    .metric-pill .val {
+      font-size: 1rem; font-weight: 600; color: var(--cream);
+    }
+
+    .metric-pill .lbl {
+      font-size: 0.65rem; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    .trend-up { color: #6eca9a; font-size: 0.7rem; }
+
+    .card-small1 {
+      width: 160px; padding: 16px;
+      top: 22%; right: 10%;
+      animation-delay: 1.2s;
+    }
+
+    .card-small1 .s-label {
+      font-size: 0.65rem; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .card-small1 .s-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem; font-weight: 300; color: var(--warm);
+    }
+
+    .card-small2 {
+      width: 150px; padding: 16px;
+      bottom: 18%; left: 8%;
+      animation-delay: 2.5s;
+    }
+
+    .card-small2 .badge {
+      display: inline-block;
+      background: rgba(200,169,110,0.2);
+      color: var(--warm);
+      font-size: 0.65rem; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 8px; border-radius: 2px;
+      margin-bottom: 8px;
+    }
+
+    .card-small2 .s-text {
+      font-size: 0.8rem; color: var(--cream2);
+      line-height: 1.4;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      position: relative; z-index: 1;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+    }
+
+    .stats-inner {
+      padding: 0 6%;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .stat-item {
+      padding: 16px 40px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:first-child { padding-left: 0; }
+    .stat-item:last-child { border-right: none; }
+
+    .stat-item strong {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem; font-weight: 300; color: var(--ink);
+      line-height: 1; margin-bottom: 6px;
+    }
+
+    .stat-item span {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--muted);
+    }
+
+    /* FEATURES SECTION */
+    .features {
+      padding: 100px 6%;
+      position: relative; z-index: 1;
+    }
+
+    .section-label {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--warm2); font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .section-label::before {
+      content: '';
+      display: inline-block; width: 24px; height: 1px;
+      background: var(--warm2);
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+      font-weight: 300; line-height: 1.1;
+      margin-bottom: 64px;
+      max-width: 600px;
+    }
+
+    .section-title em { font-style: italic; color: var(--warm2); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+
+    .feat-card {
+      padding: 40px 36px;
+      border-right: 1px solid var(--border);
+      position: relative; overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .feat-card:last-child { border-right: none; }
+
+    .feat-card:hover { background: rgba(200, 169, 110, 0.04); }
+
+    .feat-icon {
+      width: 44px; height: 44px; margin-bottom: 24px;
+      background: var(--ink);
+      border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .feat-icon svg { width: 22px; height: 22px; stroke: var(--cream); stroke-width: 1.5; fill: none; }
+
+    .feat-num {
+      position: absolute; top: 36px; right: 36px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem; font-weight: 300;
+      color: rgba(15,14,12,0.07); line-height: 1;
+    }
+
+    .feat-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+    }
+
+    .feat-card p {
+      font-size: 0.88rem; color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* SHOWCASE */
+    .showcase {
+      padding: 80px 6%;
+      background: var(--ink);
+      position: relative; overflow: hidden;
+      z-index: 1;
+    }
+
+    .showcase::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, rgba(200,169,110,0.1) 0%, transparent 60%);
+    }
+
+    .showcase-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+      position: relative; z-index: 1;
+    }
+
+    .showcase-text .section-label { color: var(--warm); }
+    .showcase-text .section-label::before { background: var(--warm); }
+
+    .showcase-text .section-title {
+      color: var(--cream);
+      margin-bottom: 28px;
+    }
+
+    .showcase-text p {
+      font-size: 0.92rem; color: var(--muted2);
+      line-height: 1.75; margin-bottom: 36px;
+    }
+
+    .btn-warm {
+      padding: 14px 32px; border-radius: 2px;
+      background: var(--warm);
+      border: none; color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.78rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: none; transition: all 0.25s;
+    }
+    .btn-warm:hover { background: var(--cream); }
+
+    /* Dashboard preview mockup */
+    .dashboard-preview {
+      background: rgba(245, 240, 232, 0.05);
+      border: 1px solid rgba(245, 240, 232, 0.1);
+      border-radius: 4px; padding: 24px;
+    }
+
+    .dash-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(245, 240, 232, 0.08);
+    }
+
+    .dash-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; font-weight: 400; color: var(--cream);
+    }
+
+    .dash-badge {
+      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+      background: rgba(200,169,110,0.15);
+      color: var(--warm); padding: 4px 10px; border-radius: 2px;
+    }
+
+    .bar-chart { display: flex; gap: 8px; align-items: flex-end; height: 100px; margin-bottom: 16px; }
+
+    .bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+
+    .bar {
+      width: 100%; border-radius: 2px 2px 0 0;
+      background: rgba(200, 169, 110, 0.3);
+      transition: background 0.2s;
+    }
+    .bar.active { background: var(--warm); }
+
+    .bar-lbl { font-size: 0.6rem; color: var(--muted2); }
+
+    .dash-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+
+    .dash-stat {
+      background: rgba(245,240,232,0.05);
+      border-radius: 2px; padding: 12px;
+    }
+
+    .dash-stat .dv { font-size: 1.1rem; font-weight: 600; color: var(--cream); }
+    .dash-stat .dl { font-size: 0.65rem; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* MODAL */
+    .backdrop {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(15, 14, 12, 0.6);
+      backdrop-filter: blur(12px);
+      display: none; justify-content: center; align-items: center;
+      opacity: 0; transition: opacity 0.35s ease;
+    }
+
+    .backdrop.open { display: flex; opacity: 1; }
+
+    .modal {
+      background: var(--cream);
+      width: 100%; max-width: 400px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      position: relative;
+      transform: translateY(20px); opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    }
+
+    .backdrop.open .modal { transform: translateY(0); opacity: 1; }
+
+    .modal-header {
+      padding: 32px 36px 24px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .modal-eyebrow {
+      font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--warm2); margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem; font-weight: 400; color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .close-modal {
+      position: absolute; top: 24px; right: 28px;
+      background: none; border: none; color: var(--muted);
+      font-size: 1.2rem; cursor: none; transition: color 0.2s;
+      line-height: 1;
+    }
+    .close-modal:hover { color: var(--ink); }
+
+    .modal-body { padding: 28px 36px 36px; }
+
+    .mtabs {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 2px; margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .mt {
+      flex: 1; padding: 11px;
+      border: none; background: transparent; color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: none; transition: all 0.25s;
+    }
+
+    .mt.on { background: var(--ink); color: var(--cream); }
+    .mt:not(.on):hover { background: rgba(15,14,12,0.04); color: var(--ink); }
+
+    .fg { margin-bottom: 16px; }
+
+    .fg label {
+      display: block; font-size: 0.65rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+
+    .fg input {
+      width: 100%; padding: 13px 16px;
+      background: rgba(15,14,12,0.04);
+      border: 1px solid var(--border);
+      border-radius: 2px; color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.88rem;
+      outline: none; transition: border-color 0.2s;
+    }
+
+    .fg input::placeholder { color: var(--muted2); }
+
+    .fg input:focus { border-color: var(--warm2); }
+
+    .bsubmit {
+      width: 100%; padding: 15px;
+      border-radius: 2px;
+      background: var(--ink); border: none;
+      color: var(--cream);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.78rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: none; margin-top: 8px;
+      transition: all 0.25s; position: relative; overflow: hidden;
+    }
+
+    .bsubmit::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--warm);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .bsubmit:hover::after { transform: translateY(0); }
+    .bsubmit span { position: relative; z-index: 1; }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 6%;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 1;
+    }
+
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 400; color: var(--muted);
+    }
+
+    .footer-copy {
+      font-size: 0.75rem; color: var(--muted2);
+      letter-spacing: 0.05em;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-tag { animation: fadeUp 0.6s ease 0.2s both; }
+    .hero h1 { animation: fadeUp 0.7s ease 0.35s both; }
+    .hero-desc { animation: fadeUp 0.7s ease 0.5s both; }
+    .hero-ctas { animation: fadeUp 0.7s ease 0.65s both; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .stats-inner { grid-template-columns: 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 20px 0; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feat-card { border-right: none; border-bottom: 1px solid var(--border); }
+      .showcase-inner { grid-template-columns: 1fr; }
+      body { cursor: auto; }
+      .cursor, .cursor-ring { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="#" class="logo">
+    <span class="logo-dot"></span>
+    RestaurantIQ
+  </a>
+  <div class="nav-links">
+    <button class="btn-ghost" onclick="openM('login')">Sign In</button>
+    <button class="btn-primary" onclick="openM('signup')"><span>Get Started</span></button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">AI-Powered Analytics Platform</div>
+    <h1>
+      Analyze any<br>restaurant,<br><em>instantly.</em>
+    </h1>
+    <p class="hero-desc">
+      Discover trends, ratings, and performance insights across 9,500+ dining spots — powered by machine learning and real-time data.
+    </p>
+    <div class="hero-ctas">
+      <button class="btn-large" onclick="openM('signup')"><span>Start Free Trial</span></button>
+      <button class="btn-outline" onclick="openM('login')">Sign In</button>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="grid-lines"></div>
+    <div class="hero-visual">
+
+      <div class="float-card card-main">
+        <div class="rest-name">Le Bernardin</div>
+        <div class="rest-meta">French · Midtown, NYC</div>
+        <div class="rating-row">
+          <div class="stars">
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star half"></div>
+          </div>
+          <div class="rating-num">4.8</div>
+          <div class="rating-count">(2,341 reviews)</div>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-pill">
+            <div class="val">$$$</div>
+            <div class="lbl">Price Range</div>
+          </div>
+          <div class="metric-pill">
+            <div class="val trend-up">↑ 12%</div>
+            <div class="lbl">Rating Trend</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="float-card card-small1">
+        <div class="s-label">Total Listings</div>
+        <div class="s-val" id="hc1">0</div>
+      </div>
+
+      <div class="float-card card-small2">
+        <div class="badge">Live Data</div>
+        <div class="s-text">Real-time review tracking across 28 cities</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <strong id="c1">0</strong>
+      <span>Restaurants Tracked</span>
+    </div>
+    <div class="stat-item">
+      <strong id="c2">0</strong>
+      <span>Cities Covered</span>
+    </div>
+    <div class="stat-item">
+      <strong id="c3">0</strong>
+      <span>Cuisine Categories</span>
+    </div>
+  </div>
+</div>
+
+<section class="features">
+  <div class="section-label">What We Offer</div>
+  <h2 class="section-title">
+    Data-driven tools for<br><em>every decision.</em>
+  </h2>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-num">01</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      </div>
+      <h3>Live Trend Analytics</h3>
+      <p>Track rating trajectories, review velocity, and emerging trends before they peak. Stay ahead of every shift in dining preferences.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">02</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <h3>Deep Search & Filters</h3>
+      <p>Query across cuisine type, neighborhood, price tier, and sentiment scores. Find exactly the insight you need, instantly.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-num">03</div>
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+      </div>
+      <h3>Comparative Dashboard</h3>
+      <p>Benchmark any restaurant against its neighborhood cohort, cuisine category, or direct competitors on any metric.</p>
+    </div>
+  </div>
+</section>
+
+<section class="showcase">
+  <div class="showcase-inner">
+    <div class="showcase-text">
+      <div class="section-label">Dashboard Preview</div>
+      <h2 class="section-title">Everything in one<br><em>clean view.</em></h2>
+      <p>Your analytics command center — track performance, monitor reviews, and surface insights at a glance. No complexity, no clutter.</p>
+      <button class="btn-warm" onclick="openM('signup')">Access the Platform</button>
+    </div>
+    <div class="dashboard-preview">
+      <div class="dash-header">
+        <div class="dash-title">Performance Overview</div>
+        <div class="dash-badge">Live</div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-wrap"><div class="bar" style="height:40%"></div><div class="bar-lbl">Mon</div></div>
+        <div class="bar-wrap"><div class="bar" style="height:65%"></div><div class="bar-lbl">Tue</div></div>
+        <div class="bar-wrap"><div class="bar active" style="height:90%"></div><div class="bar-lbl">Wed</div></div>
+        <div class="bar-wrap"><div class="bar" style="height:75%"></div><div class="bar-lbl">Thu</div></div>
+        <div class="bar-wrap"><div class="bar" style="height:55%"></div><div class="bar-lbl">Fri</div></div>
+        <div class="bar-wrap"><div class="bar" style="height:85%"></div><div class="bar-lbl">Sat</div></div>
+        <div class="bar-wrap"><div class="bar" style="height:60%"></div><div class="bar-lbl">Sun</div></div>
+      </div>
+      <div class="dash-stats">
+        <div class="dash-stat">
+          <div class="dv">4.7</div>
+          <div class="dl">Avg Rating</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dv">+18%</div>
+          <div class="dl">Reviews</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dv">#3</div>
+          <div class="dl">City Rank</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">RestaurantIQ</div>
+  <div class="footer-copy">© 2025 RestaurantIQ. All rights reserved.</div>
+</footer>
+
+<!-- MODAL -->
+<div class="backdrop" id="modal" onclick="if(event.target===this) closeM()">
+  <div class="modal">
+    <button class="close-modal" onclick="closeM()">✕</button>
+    <div class="modal-header">
+      <div class="modal-eyebrow" id="m-eyebrow">Welcome back</div>
+      <div class="modal-title" id="m-title">Sign in to<br>RestaurantIQ</div>
+    </div>
+    <div class="modal-body">
+      <div class="mtabs">
+        <button class="mt on" id="mt-l" onclick="swModal('login')">Sign In</button>
+        <button class="mt" id="mt-s" onclick="swModal('signup')">Sign Up</button>
+      </div>
+
+      <div id="mf-l">
+        <div class="fg">
+          <label>Email Address</label>
+          <input id="login-email" type="email" placeholder="you@example.com"/>
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input id="login-password" type="password" placeholder="••••••••"/>
+        </div>
+        <button class="bsubmit" onclick="loginUser()"><span>Access Dashboard →</span></button>
+      </div>
+
+      <div id="mf-s" style="display:none;">
+        <div class="fg">
+          <label>Full Name</label>
+          <input id="signup-name" type="text" placeholder="Jane Smith"/>
+        </div>
+        <div class="fg">
+          <label>Email Address</label>
+          <input id="signup-email" type="email" placeholder="you@example.com"/>
+        </div>
+        <div class="fg">
+          <label>Password</label>
+          <input id="signup-password" type="password" placeholder="Min. 8 characters"/>
+        </div>
+        <button class="bsubmit" onclick="signupUser()"><span>Create Account →</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCMLKoecIW-P2jagyN2XDHjWIh8Fb9gNQQ",
+  authDomain: "restaurantai-992cb.firebaseapp.com",
+  projectId: "restaurantai-992cb",
+  storageBucket: "restaurantai-992cb.firebasestorage.app",
+  messagingSenderId: "921223542209",
+  appId: "1:921223542209:web:7e6c92b4c873c4a8046b40"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.signupUser = async function() {
+  const email = document.getElementById("signup-email").value;
+  const password = document.getElementById("signup-password").value;
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Welcome aboard! Account created.");
+    closeM();
+  } catch(e) { alert(e.message); }
+};
+
+window.loginUser = async function() {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Authenticated! Redirecting...");
+    window.location.href = "menu.html";
+  } catch(e) { alert(e.message); }
+};
+
+window.openM = function(tab) {
+  const m = document.getElementById("modal");
+  m.style.display = "flex";
+  setTimeout(() => m.classList.add("open"), 10);
+  swModal(tab);
+};
+
+window.closeM = function() {
+  const m = document.getElementById("modal");
+  m.classList.remove("open");
+  setTimeout(() => m.style.display = "none", 400);
+};
+
+window.swModal = function(tab) {
+  const isL = tab === "login";
+  document.getElementById("mf-l").style.display = isL ? "block" : "none";
+  document.getElementById("mf-s").style.display = isL ? "none" : "block";
+  document.getElementById("mt-l").classList.toggle("on", isL);
+  document.getElementById("mt-s").classList.toggle("on", !isL);
+  document.getElementById("m-eyebrow").textContent = isL ? "Welcome back" : "Get started free";
+  document.getElementById("m-title").innerHTML = isL ? "Sign in to<br>RestaurantIQ" : "Join<br>RestaurantIQ";
+};
+
+function counter(id, end, suffix = "+") {
+  let v = 0; const step = end / 60;
+  const el = document.getElementById(id);
+  const t = setInterval(() => {
+    v += step;
+    if (v >= end) { v = end; clearInterval(t); }
+    el.textContent = Math.floor(v).toLocaleString() + suffix;
+  }, 30);
+}
+
+window.addEventListener("load", () => {
+  counter("c1", 9551);
+  counter("c2", 28, "+");
+  counter("c3", 120, "+");
+  counter("hc1", 9551);
+});
+
+// Custom cursor
+const cursor = document.getElementById("cursor");
+const ring = document.getElementById("cursorRing");
+document.addEventListener("mousemove", e => {
+  cursor.style.left = e.clientX + "px";
+  cursor.style.top = e.clientY + "px";
+  setTimeout(() => {
+    ring.style.left = e.clientX + "px";
+    ring.style.top = e.clientY + "px";
+  }, 60);
+});
+</script>
+
+</body>
+</html>
