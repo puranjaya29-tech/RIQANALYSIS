@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>RestaurantIQ - Comparison Battle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --bg: #f5f0e8; --ink: #0f0e0c; --gold: #c8a96e; --border: rgba(15, 14, 12, 0.1); --white: #ffffff;
+            --brand-1: #1e1c18; /* Ink Black */
+            --brand-2: #c8a96e; /* Gold */
+        }
+
+        body { 
+            background: var(--bg); color: var(--ink); font-family: 'Space Grotesk', sans-serif; 
+            margin: 0; padding-bottom: 60px; overflow-x: hidden;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-bar { 
+            padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; 
+            background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2000;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); text-decoration: none; z-index: 2002; }
+        .logo span { color: var(--gold); font-style: italic; }
+
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { 
+            text-decoration: none; color: var(--ink); font-size: 0.7rem; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 500; opacity: 0.6; transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { opacity: 1; color: var(--gold); }
+
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 2002; }
+        .hamburger span { width: 25px; height: 2px; background: var(--ink); transition: 0.4s; }
+
+        @media (max-width: 850px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%; width: 100%; height: 100vh;
+                background: var(--white); flex-direction: column; justify-content: center;
+                transition: 0.5s cubic-bezier(0.77,0.2,0.05,1.0); z-index: 2001;
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { font-size: 1.5rem; }
+            .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .hamburger.open span:nth-child(2) { opacity: 0; }
+            .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        }
+
+        /* --- BATTLE HEADER --- */
+        .battle-header { text-align: center; padding: 60px 20px; }
+        .battle-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); margin: 0; }
+        .battle-header p { color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: 0.8rem; margin-top: 10px; }
+
+        .search-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 40px; }
+        .input-group { width: 300px; }
+        .search-box { 
+            width: 100%; padding: 15px 20px; border: 1px solid var(--border); 
+            background: var(--white); font-size: 1rem; outline: none; border-radius: 2px;
+        }
+        .vs-circle { 
+            background: var(--ink); color: var(--white); width: 50px; height: 50px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-family: 'Playfair Display', serif;
+        }
+
+        /* --- BATTLEGROUND --- */
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 25px; padding: 25px; display: none; }
+        
+        .side-stats { background: var(--white); padding: 30px; border: 1px solid var(--border); height: fit-content; }
+        .side-stats h2 { font-family: 'Playfair Display', serif; margin: 0 0 20px 0; font-size: 2rem; }
+        
+        .viz-card { background: var(--white); border: 1px solid var(--border); padding: 25px; margin-bottom: 25px; }
+        .viz-card h4 { margin-top: 0; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); }
+
+        .feature-table { width: 100%; border-collapse: collapse; }
+        .feature-table td { padding: 15px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .label { color: #888; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+        .val { font-weight: 700; font-size: 1.1rem; }
+
+        .winner-banner { 
+            grid-column: span 3; text-align: center; background: var(--ink); color: var(--bg);
+            padding: 20px; border-radius: 2px; margin-bottom: 30px; 
+            font-family: 'Playfair Display', serif; font-size: 1.5rem;
+        }
+
+        .chart-container { height: 300px; position: relative; }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            .search-row { flex-direction: column; width: 90%; margin: 40px auto; }
+            .input-group { width: 100%; }
+            .winner-banner { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <a href="index.html" class="logo">Restaurant<span>IQ</span></a>
+    <div class="hamburger" id="hamToggle">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="nav-links" id="menuItems">
+        <a href="dashboard.html">Engine</a>
+        <a href="compare.html" class="active">Comparison</a>
+        <a href="Leaderboard.html">Leaderboard</a>
+        <a href="reprt.html">Reports</a>
+    </div>
+</nav>
+
+<div class="battle-header">
+    <p>Strategic Assessment</p>
+    <h1>Brand <span>Battleground</span></h1>
+    
+    <div class="search-row">
+        <div class="input-group">
+            <input type="text" id="search1" class="search-box" style="border-left: 4px solid var(--brand-1)" placeholder="Primary Node..." onkeyup="compare()">
+        </div>
+        <div class="vs-circle">vs</div>
+        <div class="input-group">
+            <input type="text" id="search2" class="search-box" style="border-right: 4px solid var(--brand-2)" placeholder="Comparison Node..." onkeyup="compare()">
+        </div>
+    </div>
+</div>
+
+<div class="container" id="battleUI">
+    <div class="winner-banner">
+        MARKET DOMINANCE: <span id="wName" style="color: var(--gold); font-style: italic;">--</span>
+    </div>
+
+    <div class="side-stats" style="border-top: 4px solid var(--brand-1)">
+        <h2 id="name1">--</h2>
+        <table class="feature-table">
+            <tr><td class="label">Score</td><td class="val" id="rate1" style="color:var(--brand-1)">--</td></tr>
+            <tr><td class="label">Volume</td><td class="val" id="vote1">--</td></tr>
+            <tr><td class="label">Pricing</td><td class="val" id="price1">--</td></tr>
+            <tr><td class="label">Sector</td><td class="val" id="zip1">--</td></tr>
+        </table>
+    </div>
+
+    <div class="comparison-viz">
+        <div class="viz-card">
+            <h4>Performance Gap (Radar)</h4>
+            <div class="chart-container"><canvas id="radarChart"></canvas></div>
+        </div>
+        <div class="viz-card">
+            <h4>Metric Delta (Bar)</h4>
+            <div class="chart-container"><canvas id="barChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="side-stats" style="border-top: 4px solid var(--brand-2)">
+        <h2 id="name2" style="text-align:right;">--</h2>
+        <table class="feature-table">
+            <tr><td class="val" id="rate2" style="color:var(--brand-2)">--</td><td class="label" style="text-align:right;">Score</td></tr>
+            <tr><td class="val" id="vote2" style="text-align:right;">--</td><td class="label" style="text-align:right;">Volume</td></tr>
+            <tr><td class="val" id="price2" style="text-align:right;">--</td><td class="label" style="text-align:right;">Pricing</td></tr>
+            <tr><td class="val" id="zip2" style="text-align:right;">--</td><td class="label" style="text-align:right;">Sector</td></tr>
+        </table>
+    </div>
+</div>
+
+<script>
+    let restaurantData = [];
+    let charts = {};
+
+    // Hamburger
+    const ham = document.getElementById('hamToggle');
+    const menu = document.getElementById('menuItems');
+    ham.onclick = () => {
+        ham.classList.toggle('open');
+        menu.classList.toggle('active');
+    }
+
+    async function loadData() {
+        const res = await fetch('data.json');
+        restaurantData = await res.json();
+    }
+
+    window.compare = function() {
+        const q1 = document.getElementById('search1').value.toLowerCase();
+        const q2 = document.getElementById('search2').value.toLowerCase();
+
+        const r1 = restaurantData.find(r => (r.name || "").toLowerCase().includes(q1));
+        const r2 = restaurantData.find(r => (r.name || "").toLowerCase().includes(q2));
+
+        if (r1 && r2) {
+            document.getElementById('battleUI').style.display = 'grid';
+            updateUI(r1, r2);
+            renderCharts(r1, r2);
+            calculateLeader(r1, r2);
+        }
+    }
+
+    function updateUI(r1, r2) {
+        document.getElementById('name1').innerText = r1.name;
+        document.getElementById('rate1').innerText = r1.score + " ★";
+        document.getElementById('vote1').innerText = (r1.ratings || 0).toLocaleString();
+        document.getElementById('price1').innerText = r1.price_range;
+        document.getElementById('zip1').innerText = r1.zip_code;
+
+        document.getElementById('name2').innerText = r2.name;
+        document.getElementById('rate2').innerText = r2.score + " ★";
+        document.getElementById('vote2').innerText = (r2.ratings || 0).toLocaleString();
+        document.getElementById('price2').innerText = r2.price_range;
+        document.getElementById('zip2').innerText = r2.zip_code;
+    }
+
+    function renderCharts(r1, r2) {
+        const s1 = parseFloat(r1.score);
+        const s2 = parseFloat(r2.score);
+        const p1 = r1.price_range.length;
+        const p2 = r2.price_range.length;
+
+        // Radar
+        if(charts.radar) charts.radar.destroy();
+        charts.radar = new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Score', 'Volume', 'Value', 'Market Fit'],
+                datasets: [
+                    { label: r1.name, data: [s1, 3, 5-p1, 4], borderColor: '#0f0e0c', backgroundColor: 'rgba(15,14,12,0.1)' },
+                    { label: r2.name, data: [s2, 4, 5-p2, 3.5], borderColor: '#c8a96e', backgroundColor: 'rgba(200,169,110,0.1)' }
+                ]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        // Bar
+        if(charts.bar) charts.bar.destroy();
+        charts.bar = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Rating ★', 'Price Level'],
+                datasets: [
+                    { data: [s1, p1], backgroundColor: '#0f0e0c' },
+                    { data: [s2, p2], backgroundColor: '#c8a96e' }
+                ]
+            },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    function calculateLeader(r1, r2) {
+        const score1 = (parseFloat(r1.score) * 10) + (parseInt(r1.ratings) / 100);
+        const score2 = (parseFloat(r2.score) * 10) + (parseInt(r2.ratings) / 100);
+        document.getElementById('wName').innerText = score1 > score2 ? r1.name : r2.name;
+    }
+
+    loadData();
+</script>
+</body>
+</html>

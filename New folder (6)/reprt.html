@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>RestaurantIQ - Official Audit Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --bg: #f5f0e8; --ink: #0f0e0c; --gold: #c8a96e; --border: rgba(15, 14, 12, 0.1); --white: #ffffff;
+        }
+
+        body { 
+            background: var(--bg); color: var(--ink); font-family: 'Space Grotesk', sans-serif; 
+            margin: 0; padding-bottom: 60px;
+        }
+
+        /* --- ADVANCED NAVIGATION --- */
+        .nav-bar { 
+            padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; 
+            background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 2000;
+        }
+        .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); text-decoration: none; z-index: 2002; }
+        .logo span { color: var(--gold); font-style: italic; }
+
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { 
+            text-decoration: none; color: var(--ink); font-size: 0.7rem; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 500; opacity: 0.6; transition: 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { opacity: 1; color: var(--gold); }
+
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; z-index: 2002; }
+        .hamburger span { width: 25px; height: 2px; background: var(--ink); transition: 0.4s; }
+
+        @media (max-width: 850px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                position: fixed; top: 0; right: -100%; width: 100%; height: 100vh;
+                background: var(--white); flex-direction: column; justify-content: center;
+                transition: 0.5s cubic-bezier(0.77,0.2,0.05,1.0); z-index: 2001;
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { font-size: 1.5rem; }
+            .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .hamburger.open span:nth-child(2) { opacity: 0; }
+            .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+        }
+
+        /* --- ACTION CONTROLS --- */
+        .controls { 
+            max-width: 850px; margin: 30px auto; display: flex; justify-content: space-between; padding: 0 20px;
+        }
+        .btn { 
+            padding: 12px 25px; border-radius: 2px; border: 1px solid var(--ink); 
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-print { background: var(--ink); color: var(--white); }
+        .btn-print:hover { background: var(--gold); border-color: var(--gold); }
+
+        /* --- REPORT PAPER (THE AUDIT) --- */
+        .report-paper { 
+            max-width: 850px; margin: 0 auto; background: #fff; color: #000; 
+            padding: 60px; border: 1px solid var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            min-height: 1000px;
+        }
+
+        .report-header { 
+            display: flex; justify-content: space-between; border-bottom: 1px solid #000; 
+            padding-bottom: 20px; margin-bottom: 40px; 
+        }
+        .report-header .id-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .search-area { text-align: center; margin-bottom: 40px; }
+        #reportSearch { 
+            width: 100%; max-width: 500px; padding: 15px; border: 1px solid var(--border); 
+            font-family: 'Space Grotesk', sans-serif; outline: none; border-radius: 2px;
+        }
+
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 40px 0; }
+        .data-item { border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .data-label { color: #888; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; }
+        .data-value { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-top: 5px; }
+
+        .chart-box { margin-top: 40px; padding: 30px; border: 1px solid #f0f0f0; background: #fafafa; }
+        .chart-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; text-align: center; }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            .nav-bar, .controls, .search-area, .hamburger { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .report-paper { border: none; box-shadow: none; margin: 0; padding: 40px; width: 100%; }
+        }
+
+        @media (max-width: 600px) {
+            .report-paper { padding: 30px; }
+            .data-grid { grid-template-columns: 1fr; }
+            .report-header { flex-direction: column; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav-bar">
+    <a href="index.html" class="logo">Restaurant<span>IQ</span></a>
+    <div class="hamburger" id="hamToggle">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="nav-links" id="menuItems">
+        <a href="dashboard.html">Engine</a>
+        <a href="compare.html">Comparison</a>
+        <a href="Leaderboard.html">Leaderboard</a>
+        <a href="reprt.html" class="active">Reports</a>
+    </div>
+</nav>
+
+<div class="controls">
+    <div style="font-size: 0.7rem; color: var(--muted); align-self: center;">OFFICIAL AUDIT EXPORT</div>
+    <button class="btn btn-print" onclick="window.print()">Download PDF Report</button>
+</div>
+
+<div class="search-area">
+    <input type="text" id="reportSearch" placeholder="SEARCH IDENTIFIER FOR AUDIT..." onkeyup="generateReport()">
+</div>
+
+<div class="report-paper" id="printableArea">
+    <div class="report-header">
+        <div>
+            <div style="font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700;">RESTAURANT IQ</div>
+            <div class="id-label">Market Intelligence Division</div>
+        </div>
+        <div style="text-align: right;">
+            <div id="reportDate" style="font-weight: 500; font-size: 0.9rem;">DATE: --/--/----</div>
+            <div class="id-label">REPORT ID: #RIQ-2026-AUDIT</div>
+        </div>
+    </div>
+
+    <div id="noReport" style="text-align: center; padding: 100px; color: #bbb; font-style: italic;">
+        Waiting for data node identification...
+    </div>
+
+    <div id="reportContent" style="display: none;">
+        <h1 id="repName" style="font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0; font-weight: 400;">--</h1>
+        <p id="repAddr" style="color: #666; letter-spacing: 1px; font-size: 0.9rem; margin-top: 10px;">--</p>
+
+        <div class="data-grid">
+            <div class="data-item">
+                <div class="data-label">Market Score (Rating)</div>
+                <div class="data-value" id="repRating">0.0 ★</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Sample Size (Total Reviews)</div>
+                <div class="data-value" id="repVotes">0</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Price Indexing</div>
+                <div class="data-value" id="repPrice">N/A</div>
+            </div>
+            <div class="data-item">
+                <div class="data-label">Sector Registry</div>
+                <div class="data-value" id="repZip">N/A</div>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <div class="chart-title">Visual Performance Matrix (Audit Score)</div>
+            <canvas id="reportChart" height="150"></canvas>
+        </div>
+
+        <div style="margin-top: 80px; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 20px; line-height: 1.6; color: #444;">
+            <strong>CERTIFICATION:</strong> This document serves as a verified market audit. The data points contained herein are retrieved from historical performance archives and intended for strategic assessment. <br><br>
+            <em>Digital Signature: <strong>RIQ_SECURE_AUTH_2026</strong></em>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db = [];
+    let repChart = null;
+
+    // Hamburger Logic
+    const ham = document.getElementById('hamToggle');
+    const menu = document.getElementById('menuItems');
+    ham.onclick = () => {
+        ham.classList.toggle('open');
+        menu.classList.toggle('active');
+    }
+
+    async function init() {
+        try {
+            const res = await fetch('data.json');
+            db = await res.json();
+            document.getElementById('reportDate').innerText = "DATE: " + new Date().toLocaleDateString('en-GB');
+        } catch(e) { console.error("Database connection failed"); }
+    }
+
+    window.generateReport = function() {
+        const query = document.getElementById('reportSearch').value.toLowerCase();
+        if(query.length < 2) return;
+
+        const found = db.find(r => (r.name || r.Name || "").toLowerCase().includes(query));
+
+        if(found) {
+            document.getElementById('noReport').style.display = 'none';
+            document.getElementById('reportContent').style.display = 'block';
+
+            document.getElementById('repName').innerText = found.name || found.Name;
+            document.getElementById('repAddr').innerText = found.full_address || found.category || "Official Location Unspecified";
+            document.getElementById('repRating').innerText = (found.score || found.Rating) + " ★";
+            document.getElementById('repVotes').innerText = (parseInt(found.ratings || found.Votes)).toLocaleString();
+            document.getElementById('repPrice').innerText = found.price_range || "$$";
+            document.getElementById('repZip').innerText = found.zip_code || "N/A";
+
+            renderReportChart(found);
+        }
+    }
+
+    function renderReportChart(data) {
+        const ctx = document.getElementById('reportChart').getContext('2d');
+        if(repChart) repChart.destroy();
+
+        const score = parseFloat(data.score || data.Rating);
+        const priceWeight = 5 - (data.price_range || "$$").length;
+
+        repChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Market Score', 'Engagement Depth', 'Price Efficiency'],
+                datasets: [{
+                    label: 'Audit Level',
+                    data: [score, Math.min(data.ratings/500, 5), priceWeight],
+                    backgroundColor: ['#0f0e0c', '#c8a96e', '#7a7468'],
+                    barThickness: 30
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 5, ticks: { font: { family: 'Space Grotesk' } } } }
+            }
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>
